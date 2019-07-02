@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Color Picker in SAI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>SAI Style Color Picker</title>
+    <link href="./dist/picker-base.css" rel="stylesheet">
 </head>
+
 <body>
 
-  <div class="color-display">
-      <i class="preview" data-color-preview></i>
-      <span class="name" data-color-name>-</span>
-  </div>
-  <br>
-  <div id="picker"></div>
+    <div id="picker"></div>
 
-  <script src="index_bundle.js"></script>
+    <script src="./dist/sai-style-color-picker.js"></script>
+    <script>
+        var pickerEl = document.querySelector("#picker");
+        var saiPicker = new SaiStyleColorPicker(pickerEl);
+    </script>
 </body>
+
 </html>

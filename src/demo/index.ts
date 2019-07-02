@@ -1,6 +1,5 @@
-
 import "./index.less";
-import SaiStyleColorPicker from "./SaiStyleColorPicker";
+import SaiStyleColorPicker from "../lib/SaiStyleColorPicker";
 
 let pickerEl: HTMLElement = document.querySelector("#picker");
 let saiPicker = new SaiStyleColorPicker(pickerEl);
@@ -12,4 +11,3 @@ saiPicker.on("update", function(color: string){
     colorPreview.style.backgroundColor = color;
     colorName.innerText = color;
 });
-

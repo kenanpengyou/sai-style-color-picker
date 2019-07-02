@@ -21,7 +21,7 @@ class SaiStyleColorPicker {
         realBorderOffset: 1,
         innerBorderGapRadian: Math.PI / 180,
         startAngle: 330,
-        backgroundColor: "#f8f8f8",
+        backgroundColor: "#fff",
         borderColor: "#acacac"
     };
     private wheelPanelOptions: any = {};
@@ -55,12 +55,50 @@ class SaiStyleColorPicker {
         this.init();
     }
 
-    public getColor() {
-        return this.colorControl.toColorString();
+    public getColor(type?: String) {
+        
+        switch (type) {
+
+            case "hsl": {
+                let {hue, saturation, value} = this.colorControl;
+                let lightness;
+                [hue, saturation, lightness] = Color.hsv2hsl(hue, saturation, value);
+                return `hsl(${Math.round(hue)}, ${Math.round(saturation * 100)}%, ${Math.round(lightness * 100)}%)`;
+            }
+
+            case "rgb": {
+                return this.colorControl.toColorString();
+            }
+
+            case "hex":
+            default: {
+                let {red, green, blue} = this.colorControl;
+                red = Math.round(red);
+                green = Math.round(green);
+                blue = Math.round(blue);
+                return Color.rgb2hex(red, green, blue);
+            }
+
+        }
     }
 
     public setColor(color: string) {
+        color = color.trim();
+        let hue;
+        let saturation;
+        let value;
 
+        if (color.charAt(0) === "#") {
+            let [red, green, blue] = Color.hex2rgb(color);
+            let lightness;
+            [hue, saturation, lightness] = Color.rgb2hsl(red, green, blue);
+            [hue, saturation, value] = Color.hsl2hsv(hue, saturation, lightness);
+        }
+
+        this.colorControl.hue = hue;
+        this.colorControl.saturation = saturation;
+        this.colorControl.value = value;
+        this.colorControl.refreshByHSV();
     }
 
     public on(event: string, fn: Function) {
@@ -184,8 +222,6 @@ class SaiStyleColorPicker {
             squarePointY >= 0 && squarePointY <= this.posControl.squareSize) {
             this.triggerMoveForColor(pointX, pointY);
             this.startWatchMove("color");
-        } else {
-            console.log("[triggerDown] else", pointX, pointY);
         }
     }
 
@@ -398,6 +434,7 @@ class Color {
         this.refreshByHSV();
     }
 
+    // format "rgb()" as the color string
     public toColorString() {
         let red = Math.round(this.red);
         let green = Math.round(this.green);
@@ -435,6 +472,52 @@ class Color {
         let m = value - chroma;
         let [r, g, b] = [r1 + m, g1 + m, b1 + m];
         return [255 * r, 255 * g, 255 * b];
+    }
+
+    public static rgb2hsl(r: number, g: number, b: number) {
+        let a = Math.max(r, g, b);
+        let i = Math.min(r, g, b);
+        let n = a - i;
+        let l = (a + i) / 2
+        let f = (1 - Math.abs(a + i - 1));
+        let s = f ? n / f : 0;
+        let h = 0;
+        if (n) {
+            if (a == r) h = 60 * (0 + (g - b) / n);
+            if (a == g) h = 60 * (2 + (b - r) / n);
+            if (a == b) h = 60 * (4 + (r - g) / n);
+        }
+
+        return [(h < 0 ? h + 360 : h) % 360, s, l];
+    }
+
+    public static hsl2hsv(h: number, s: number, l: number) {
+        let v = s * Math.min(l, 1 - l) + l;
+        return [h, v ? 2 - 2 * l / v : 0, v];
+    }
+
+    public static hsv2hsl(h: number, s: number, v: number) {
+        let l = v - v * s / 2, m = Math.min(l, 1 - l);
+        return [h, m ? (v - l) / m : 0, l];
+    }
+
+    // https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+    // support shorthand form like "#fff"
+    public static hex2rgb(hex: string) {
+        let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+            return r + r + g + g + b + b;
+        });
+
+        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        let [r, g, b] = [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
+
+        return [r, g, b];
+    }
+
+    public static rgb2hex(r: number, g: number, b: number) {
+        return "#" + [r, g, b]
+        .map(x => x.toString(16).padStart(2, "0")).join("");
     }
 }
 

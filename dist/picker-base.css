@@ -1,0 +1,25 @@
+.sai-picking-area-container {
+  position: relative;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+.sai-picking-area {
+  position: relative;
+  height: 100%;
+  background-image: -webkit-gradient(linear, left bottom, left top, from(#000), to(rgba(0, 0, 0, 0))), -webkit-gradient(linear, left top, right top, from(#fff), to(rgba(255, 255, 255, 0)));
+  background-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0) 100%), linear-gradient(to right, #fff 0%, rgba(255, 255, 255, 0) 100%);
+}
+.sai-color-picker,
+.sai-hue-picker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+
+/*# sourceMappingURL=picker-base.css.map*/
