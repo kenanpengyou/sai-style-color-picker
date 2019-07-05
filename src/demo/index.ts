@@ -2,7 +2,8 @@ import "./index.less";
 import SaiStyleColorPicker from "../lib/SaiStyleColorPicker";
 
 let pickerEl: HTMLElement = document.querySelector("#picker");
-let saiPicker = new SaiStyleColorPicker(pickerEl);
+let config = { inlineStyle: false };
+let saiPicker = new SaiStyleColorPicker(pickerEl, config);
 
 let colorPreview: HTMLElement = document.querySelector("[data-color-preview]");
 let colorName: HTMLElement = document.querySelector("[data-color-name]");

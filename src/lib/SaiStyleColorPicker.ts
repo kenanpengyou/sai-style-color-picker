@@ -14,20 +14,26 @@ class SaiStyleColorPicker {
 
     // config (options)
     private defaultConfig = {
+
+        // [public] designed for modification
         size: 207,
         thickness: 21,
+        startAngle: 330,
+        backgroundColor: "#fff",
+        borderColor: "#acacac",
+        initColor: "#fff",
+        inlineStyle: true,
+
+        // [reserved] modified not recommended
         matteBorderWidth: 2,
         realBorderWidth: 1,
         realBorderOffset: 1,
-        innerBorderGapRadian: Math.PI / 180,
-        startAngle: 330,
-        backgroundColor: "#fff",
-        borderColor: "#acacac"
+        innerBorderGapRadian: Math.PI / 180
     };
     private wheelPanelOptions: any = {};
 
     // control variables
-    private colorControl: Color = new Color(196, 0.55, 0.95);
+    private colorControl: Color = new Color(0, 0, 1);
     private centerPoint: any = {
         x: 0,
         y: 0
@@ -50,7 +56,7 @@ class SaiStyleColorPicker {
     private colorPicker: HTMLElement;
 
     public constructor(el: HTMLElement, config: Object = {}) {
-        this.wheelPanelOptions = Object.assign({}, this.defaultConfig, config);
+        this.wheelPanelOptions = {...this.defaultConfig, ...config};
         this.el = el;
         this.init();
     }
@@ -59,11 +65,27 @@ class SaiStyleColorPicker {
         
         switch (type) {
 
+            case "object:rgb": {
+                return {
+                    r: this.colorControl.red,
+                    g: this.colorControl.green,
+                    b: this.colorControl.blue
+                }
+            }
+
+            case "object:hsv": {
+                return {
+                    h: this.colorControl.hue,
+                    s: this.colorControl.saturation,
+                    v: this.colorControl.value
+                }
+            }
+
             case "hsl": {
                 let {hue, saturation, value} = this.colorControl;
                 let lightness;
                 [hue, saturation, lightness] = Color.hsv2hsl(hue, saturation, value);
-                return `hsl(${Math.round(hue)}, ${Math.round(saturation * 100)}%, ${Math.round(lightness * 100)}%)`;
+                return `hsl(${Math.round(hue)}, ${+(saturation * 100).toFixed(1)}%, ${+(lightness * 100).toFixed(1)}%)`;
             }
 
             case "rgb": {
@@ -73,9 +95,6 @@ class SaiStyleColorPicker {
             case "hex":
             default: {
                 let {red, green, blue} = this.colorControl;
-                red = Math.round(red);
-                green = Math.round(green);
-                blue = Math.round(blue);
                 return Color.rgb2hex(red, green, blue);
             }
 
@@ -84,21 +103,60 @@ class SaiStyleColorPicker {
 
     public setColor(color: string) {
         color = color.trim();
-        let hue;
-        let saturation;
-        let value;
+        let hue, saturation, value;
+        let lightness;
 
+        // #fff
         if (color.charAt(0) === "#") {
             let [red, green, blue] = Color.hex2rgb(color);
-            let lightness;
             [hue, saturation, lightness] = Color.rgb2hsl(red, green, blue);
             [hue, saturation, value] = Color.hsl2hsv(hue, saturation, lightness);
+
+        // rgb(255, 255, 255)
+        // rgb(100%, 100%, 100%)
+        } else if (color.includes("rgb")) {
+            let reg = /rgb\((.+)\)/;
+            let valueString = reg.exec(color)[1];
+            let valueArray;
+            let red, green, blue;
+
+            if (valueString.includes("%")) {
+                valueArray = valueString.replace(/%/g, "").split(",");
+                [red, green, blue] = valueArray.map(item => {
+                    return +item / 100 * 255;
+                });
+                [hue, saturation, lightness] = Color.rgb2hsl(red, green, blue);
+
+            } else {
+                valueArray = valueString.split(",");
+                [red, green, blue] = valueArray.map(item => {
+                    return +item;
+                });
+                [hue, saturation, lightness] = Color.rgb2hsl(red, green, blue);
+            }
+            
+        // hsl(192, 0%, 100%)
+        } else if (color.includes("hsl")) {
+            let reg = /hsl\((.+)\)/;
+            let valueString = reg.exec(color)[1];
+            let valueArray;
+
+            valueArray = valueString.split(",");
+            [hue, saturation, lightness] = valueArray.map(item => {
+                return item.includes("%") ? +item.replace("%", "") / 100 : +item;
+            });
+
+        } else {
+            throw new Error("Not a valid color string.")
         }
+
+        [hue, saturation, value] = Color.hsl2hsv(hue, saturation, lightness);
 
         this.colorControl.hue = hue;
         this.colorControl.saturation = saturation;
         this.colorControl.value = value;
         this.colorControl.refreshByHSV();
+        this.refreshColorDisplay();
     }
 
     public on(event: string, fn: Function) {
@@ -121,14 +179,14 @@ class SaiStyleColorPicker {
         if (eventSubscriptions) {
             for (let i = 0; i < eventSubscriptions.length; i++) {
                 let fn = eventSubscriptions[i];
-                fn.apply(null, args);
+                fn.apply(this, args);
             }
         }
     }
 
     private init() {
         this.genElements();
-        this.refreshColorDisplay();
+        this.setColor(this.wheelPanelOptions.initColor);
         this.bindEvents();
     }
 
@@ -168,6 +226,34 @@ class SaiStyleColorPicker {
         pickingAreaContainer.className = "sai-picking-area-container";
         this.setStyleCombined(pickingAreaContainer, pickingAreaContainerStyle);
 
+        // use inline style if needed
+        if (this.wheelPanelOptions.inlineStyle) {
+            let pickerStyle = {
+                position: "absolute",
+                width: "10px",
+                height: "10px",
+                margin: "-5px 0 0 -5px",
+                borderWidth: "2px",
+                borderStyle: "solid",
+                borderRadius: "50%",
+                boxSizing: "border-box"
+            };
+            let pickingAreaStyle = {
+                position: "relative",
+                height: "100%"
+            };
+            let pickingAreaContainerBaseStyle = {
+                position: "relative",
+                boxSizing: "border-box"
+            };
+            this.setupPickingAreaGradient(pickingArea);
+            this.setStyleCombined(colorPicker, pickerStyle);
+            this.setStyleCombined(huePicker, pickerStyle);
+            this.setStyleCombined(pickingArea, pickingAreaStyle);
+            this.setStyleCombined(pickingAreaContainer, pickingAreaContainerBaseStyle);
+        }
+
+
         // assembly and update DOM
         pickingArea.appendChild(colorPicker);
         pickingAreaContainer.appendChild(pickingArea);
@@ -189,6 +275,15 @@ class SaiStyleColorPicker {
             let value = styleObject[key];
             elStyle[key] = value;
         });
+    }
+
+    // less code ref:
+    // background-image: linear-gradient(to top, #000 0%, rgba(#000, 0) 100%), linear-gradient(to right, #fff 0%, rgba(#fff, 0) 100%);
+    private setupPickingAreaGradient(el: HTMLElement) {
+        let gradientString = "linear-gradient(to top, #000 0%, rgba(#000, 0) 100%), linear-gradient(to right, #fff 0%, rgba(#fff, 0) 100%)";
+        let gradientStringWebkit = "-webkit-gradient(linear, left bottom, left top, from(#000), to(rgba(0, 0, 0, 0))), -webkit-gradient(linear, left top, right top, from(#fff), to(rgba(255, 255, 255, 0)))";
+        el.style.backgroundImage = gradientString;
+        el.style.backgroundImage = gradientStringWebkit;
     }
 
     private bindEvents() {
@@ -420,9 +515,9 @@ class Color {
     public value: number;
 
     // rgb
-    // r: [0, 255]
-    // g: [0, 255]
-    // b: [0, 255]
+    // r: [0, 255] | "int"
+    // g: [0, 255] | "int"
+    // b: [0, 255] | "int"
     public red: number;
     public green: number;
     public blue: number;
@@ -436,17 +531,14 @@ class Color {
 
     // format "rgb()" as the color string
     public toColorString() {
-        let red = Math.round(this.red);
-        let green = Math.round(this.green);
-        let blue = Math.round(this.blue);
-        return `rgb(${red}, ${green}, ${blue})`;
+        return `rgb(${this.red}, ${this.green}, ${this.blue})`;
     }
 
     public refreshByHSV() {
         let [red, green, blue] = Color.hsv2rgb(this.hue, this.saturation, this.value);
-        this.red = red;
-        this.green = green;
-        this.blue = blue;
+        this.red = Math.round(red);
+        this.green = Math.round(green);
+        this.blue = Math.round(blue);
     }
 
     // https://en.wikipedia.org/wiki/HSL_and_HSV
@@ -474,21 +566,36 @@ class Color {
         return [255 * r, 255 * g, 255 * b];
     }
 
+    // https://css-tricks.com/converting-color-spaces-in-javascript/
     public static rgb2hsl(r: number, g: number, b: number) {
-        let a = Math.max(r, g, b);
-        let i = Math.min(r, g, b);
-        let n = a - i;
-        let l = (a + i) / 2
-        let f = (1 - Math.abs(a + i - 1));
-        let s = f ? n / f : 0;
-        let h = 0;
-        if (n) {
-            if (a == r) h = 60 * (0 + (g - b) / n);
-            if (a == g) h = 60 * (2 + (b - r) / n);
-            if (a == b) h = 60 * (4 + (r - g) / n);
-        }
+        r /= 255;
+        g /= 255;
+        b /= 255;
+        let cmin = Math.min(r, g, b),
+            cmax = Math.max(r, g, b),
+            delta = cmax - cmin,
+            h = 0,
+            s = 0,
+            l = 0;
 
-        return [(h < 0 ? h + 360 : h) % 360, s, l];
+        if (delta == 0)
+            h = 0;
+        else if (cmax == r)
+            h = ((g - b) / delta) % 6;
+        else if (cmax == g)
+            h = (b - r) / delta + 2;
+        else
+            h = (r - g) / delta + 4;
+
+        h = Math.round(h * 60);
+
+        if (h < 0)
+            h += 360;
+
+        l = (cmax + cmin) / 2;
+        s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));;
+
+        return [h, s, l];
     }
 
     public static hsl2hsv(h: number, s: number, l: number) {
@@ -515,9 +622,20 @@ class Color {
         return [r, g, b];
     }
 
-    public static rgb2hex(r: number, g: number, b: number) {
-        return "#" + [r, g, b]
-        .map(x => x.toString(16).padStart(2, "0")).join("");
+    // r, g, b should be "int"
+    public static rgb2hex(r: any, g: any, b: any) {
+        r = r.toString(16);
+        g = g.toString(16);
+        b = b.toString(16);
+
+        if (r.length == 1)
+            r = "0" + r;
+        if (g.length == 1)
+            g = "0" + g;
+        if (b.length == 1)
+            b = "0" + b;
+
+        return "#" + r + g + b;
     }
 }
 
