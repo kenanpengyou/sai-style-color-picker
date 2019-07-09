@@ -16,7 +16,6 @@ if (env === 'build') {
             library: 'SaiStyleColorPicker',
             libraryTarget: 'umd'
         },
-        devtool: 'source-map',
         mode: 'production',
         module: {
             rules: [{

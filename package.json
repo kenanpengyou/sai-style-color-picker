@@ -1,7 +1,7 @@
 {
     "name": "sai-style-color-picker",
     "description": "A color picker designed similar to PaintTool SAI.",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "main": "dist/sai-style-color-picker.js",
     "scripts": {
         "start": "webpack-dev-server --env dev",
