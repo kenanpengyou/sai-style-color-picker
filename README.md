@@ -60,7 +60,7 @@ let config = {
     // the angle (degree) that will rotate the hue wheel
     startAngle: 330,
 
-    // (for style)  background color
+    // (for style) background color
     backgroundColor: "#fff",
 
     // (for style) border color
@@ -108,7 +108,7 @@ Compared with javascript inline styles, using css styles will neaten your html c
 // "hex" - default
 // "rgb"
 // "hsl"
-// "object:rbg"
+// "object:rgb"
 // "object:hsv"
 saiPicker.getColor("hex");
 ```
