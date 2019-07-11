@@ -3,20 +3,190 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="A color picker designed similar to PaintTool SAI.">
+    <meta name="keywords" content="sai, color picker">
+    <meta name="author" content="Liang Zhu">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>SAI Style Color Picker</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="./fonts/style.css" rel="stylesheet">
     <link href="./dist/picker-base.css" rel="stylesheet">
+    <style>
+        html {
+            background: #fafafa;
+            font-family: Verdana, Arial, sans-serif;
+            color: #333;
+            font-size: 14px;
+        }
+        html, body {
+            height: 100%;
+        }
+        body {
+            margin: 0;
+        }
+        .wrapper {
+            min-height: 100%;
+            margin-bottom: -40px;
+            padding-bottom: 40px;
+            box-sizing: border-box;
+        }
+        .footer {
+            height: 40px;
+            padding: 0 20px;
+            text-align: center;
+            line-height: 40px;
+        }
+        .footer > a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .footer > a:hover {
+            text-decoration: underline;
+        }
+        .bar {
+            height: 2px;
+            background: -webkit-linear-gradient(left, #F00 0%, #FF0 16.66%, #0F0 33.33%, #0FF 50%,
+            #00F 66.66%, #F0F 83.33%, #F00 100%);
+            background: linear-gradient(to right, #F00 0%, #FF0 16.66%, #0F0 33.33%, #0FF 50%,
+            #00F 66.66%, #F0F 83.33%, #F00 100%);
+        }
+        .intro-stage {
+            width: 320px;
+            margin: 0 auto;
+            padding: 30px 0 0 0;
+        }
+        .lib-title {
+            margin: 0 0 30px 0;
+            color: #333;
+            font-size: 40px;
+            font-weight: normal;
+            font-family: "Molor-Regular";
+            text-align: center;
+        }
+        .live-display {
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .picker-part {
+            width: 207px;
+            margin: 0 auto 30px;
+        }
+        .result-part {
+            padding: 0 30px;
+        }
+        .color-box {
+            width: 36px;
+            height: 36px;
+            margin: 0 auto;
+            padding: 1px;
+            border: 1px solid #acacac;
+            box-sizing: border-box;
+        }
+        .picked-color {
+            height: 100%;
+        }
+        .color-detail dl {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+            margin: 20px 0;
+            color: #666;
+        }
+        .color-detail dt {
+            width: 60px;
+        }
+        .color-detail dd {
+            -webkit-box-flex: 1;
+            -ms-flex: 1;
+            flex: 1;
+            height: 24px;
+            margin: 0;
+            padding: 0 5px;
+            background: #fff;
+            box-sizing: border-box;
+            font-size: 12px;
+            text-align: center;
+            line-height: 24px;
+        }
+        .start-guide {
+            text-align: center;
+        }
+        .guide-btn {
+            display: inline-block;
+            height: 40px;
+            padding: 0 30px;
+            background: #645bd0;
+            color: #fff;
+            font-size: 14px;
+            text-decoration: none;
+            line-height: 40px;
+        }
+        .guide-btn:hover {
+            background: #666ed9;
+        }
+    </style>
 </head>
 
 <body>
-
-    <div id="picker"></div>
-
+    <main class="wrapper">
+        <div class="bar"></div>
+        <div class="intro-stage">
+            <h1 class="lib-title">SAI Style Color Picker</h1>
+            <div class="live-display">
+                <div class="picker-part">
+                    <div id="picker"></div>
+                </div>
+                <div class="result-part">
+                    <div class="color-box">
+                        <div id="picked_color" class="picked-color" style="background: #000"></div>
+                    </div>
+                    <div class="color-detail">
+                        <dl>
+                            <dt>HEX</dt>
+                            <dd id="hex"></dd> 
+                        </dl>
+                        <dl>
+                            <dt>RGB</dt>
+                            <dd id="rgb"></dd> 
+                        </dl>
+                        <dl>
+                            <dt>HSL</dt>
+                            <dd id="hsl"></dd> 
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="start-guide">
+                <a class="guide-btn" href="https://github.com/kenanpengyou/sai-style-color-picker">Getting Started</a>
+            </div>
+        </div>
+    </main>
+    <footer class="footer">
+        &copy; 2019 <a href="http://acgtofe.com">Tea Works</a>.
+    </footer>
     <script src="./dist/sai-style-color-picker.js"></script>
     <script>
+        var pickedColor = document.querySelector("#picked_color");
+        var hex = document.querySelector("#hex");
+        var rgb = document.querySelector("#rgb");
+        var hsl = document.querySelector("#hsl");
+
         var pickerEl = document.querySelector("#picker");
-        var saiPicker = new SaiStyleColorPicker(pickerEl);
+        var saiPicker = new SaiStyleColorPicker(pickerEl, {
+            backgroundColor: "#fafafa"
+        });
+        saiPicker.on("update", function (color) {
+            pickedColor.style.background = color;
+            hex.innerHTML = color;
+            rgb.innerHTML = this.getColor("rgb");
+            hsl.innerHTML = this.getColor("hsl");
+        });
+        saiPicker.setColor("#000");
     </script>
 </body>
 
