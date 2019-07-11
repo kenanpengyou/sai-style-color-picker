@@ -2,6 +2,9 @@
 A color picker designed similar to PaintTool SAI.
 
 ## Preview
+
+http://sai.yardtea.cc
+
 ![preview](https://raw.githubusercontent.com/kenanpengyou/sai-style-color-picker/master/intro/preview.png)
 
 ## Getting Started
