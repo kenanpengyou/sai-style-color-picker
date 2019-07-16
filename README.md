@@ -21,6 +21,12 @@ or
 yarn add sai-style-color-picker
 ```
 
+or download a [release](https://github.com/kenanpengyou/sai-style-color-picker/releases)
+
+```html
+<script src="./dist/sai-style-color-picker.js"></script>
+```
+
 ### start
 
 Basic implementation:
