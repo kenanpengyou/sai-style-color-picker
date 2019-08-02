@@ -205,7 +205,7 @@ class SaiStyleColorPicker {
         let pickingAreaContainerStyle = {
             width: this.wheelPanelOptions.size + "px",
             height: this.wheelPanelOptions.size + "px",
-            padding: (this.wheelPanelOptions.size - this.posControl.squareSize) / 2 + "px",
+            padding: Math.round((this.wheelPanelOptions.size - this.posControl.squareSize) / 2) + "px",
             background: `${this.wheelPanelOptions.backgroundColor} url(${frameCanvas.toDataURL()}) center center no-repeat`
         };
 
